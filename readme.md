@@ -90,13 +90,3 @@ If you find this project helpful, please consider citing the following paper:
       year={2024}
 }
 ```
-
-python dataset/gen_data.py --info_path /mnt/data/xzt/data_nusc/nuscenes2d_ego_temporal_infos_val.pkl --qa_path /mnt/data/xzt/data_nusc --nusc_path /mnt/data/xzt/origin --save_path /home/xzt/Doe/out/data.json --max_length 5
-
-CUDA_VISIBLE_DIVICES=0 python inference/eval.py \
---anno_path /mnt/data/xzt/data_nusc/nuscenes2d_ego_temporal_infos_val.pkl  \
---nusc_path /mnt/data/xzt/origin \
---save_path /home/xzt/Doe/out/out.json  \
---model_path /mnt/data/xzt/lumina_train/v4/epoch16 \
---data_path /home/xzt/Doe/out/data.json \
---task plan

@@ -1,23 +1,51 @@
-<!-- ![logo](./assets/logo.png) --> 
+# Doe-1: Closed-Loop Autonomous Driving with Large World Model
+### [Paper](https://arxiv.org/pdf/2412.08643)  | [Project Page](https://wzzheng.net/Doe)  | [Code](https://github.com/wzzheng/Doe) 
+![logo](./assets/logo.jpg)
 
-This repository contains the implementation of Doe. 
+Check out our [Large Driving Model](https://github.com/wzzheng/LDM/) Series! 
 
-> **Doe: Closed-Loop Autonomous Driving with Large World Model**<br>
-<!-- > [Paper](https://arxiv.org/abs/2405.17429)  | [Project Page](https://wzzheng.net/GaussianFormer)  -->
 
-## News.
+> Doe-1: Closed-Loop Autonomous Driving with Large World Model
+
+> [Wenzhao Zheng](https://wzzheng.net/)\* $\dagger$, [Zetian Xia]()\*, [Yuanhui Huang](https://huang-yh.github.io/), [Sicheng Zuo](https://github.com/zuosc19),  [Jie Zhou](https://scholar.google.com/citations?user=6a79aPwAAAAJ&hl=en&authuser=1), [Jiwen Lu](http://ivg.au.tsinghua.edu.cn/Jiwen_Lu/)
+
+\* Equal contribution $\dagger$ Project leader
+
+Doe-1 is the first closed-loop autonomous driving model for unified perception, prediction, and planning.
+
+## News
+
 - **[2024/12/13]** Model weights and evaluation code release.
-<!-- - **[2024/12/13]** Paper released on [arXiv](https://arxiv.org/abs/2405.17429). -->
+- **[2024/12/13]** Paper released on [arXiv](https://arxiv.org/abs/).
 - **[2024/12/13]** Demo release.
 
-## Doe
-<!-- <img src="assets/framework.pdf"> -->
+## Demo
 
-<!-- .pdf cant be rendered? How to get png ???? -->
+![demo](./assets/demo.gif)
 
-Doe proposes a closed-loop and end-to-end large world model for unified perception, prediction, and planning for autonomous driving.
+Doe-1 is a unified model to accomplish visual-question answering, future prediction, and motion planning.
 
-We use free-form texts (i.e., scene descriptions) for perception and generate future predictions directly in the RGB space with image tokens. For planning, we employ a position-aware tokenizer to effectively encode action into discrete tokens. We train a multi-modal transformer to autoregressively generate perception, prediction, and planning tokens in an end-to-end and unified manner. 
+## Overview
+
+![overview](./assets/overview.png)
+
+We formulate autonomous driving as a unified next-token generation problem and use observation, description, and action tokens to represent each scene. Without additional fine-tuning, Doe-1 accomplishes various tasks by using different input prompts, including visual question-answering, controlled image generation, and end-to-end motion planning.
+
+### Closed-Loop Autonomous Driving
+
+![closed-loop](./assets/closed-loop.png)
+
+We explore a new closed-loop autonomous driving paradigm which combines end-to-end model and world model to construct a closed loop.
+
+## Visualizations
+
+### Closed-Loop Autonomous Driving
+
+![vis-closed-loop](./assets/vis-closed-loop.png)
+
+### Action-Conditioned Video Generation
+
+![vis-prediction](./assets/vis-prediction.png)
 
 ## Getting Started
 
@@ -71,22 +99,16 @@ CUDA_VISIBLE_DIVICES=0 python inference/eval.py \
 
 ## Related Projects
 
-Our code is originally based on the excellent work [Lumina-mGPT](https://github.com/Alpha-VLLM/Lumina-mGPT).
+Our code is based on the excellent work [Lumina-mGPT](https://github.com/Alpha-VLLM/Lumina-mGPT).
 
 ## Citation
 
 If you find this project helpful, please consider citing the following paper:
 ```
-@article{huang2024gaussian,
-    title={GaussianFormer: Scene as Gaussians for Vision-Based 3D Semantic Occupancy Prediction},
-    author={Huang, Yuanhui and Zheng, Wenzhao and Zhang, Yunpeng and Zhou, Jie and Lu, Jiwen},
-    journal={arXiv preprint arXiv:2405.17429},
+@article{doe,
+    title={Doe-1: Closed-Loop Autonomous Driving with Large World Model},
+    author={Zheng, Wenzhao and Xia, Zetian and Huang, Yuanhui and Zuo, Sicheng and Zhou, Jie and Lu, Jiwen},
+    journal={arXiv preprint arXiv:},
     year={2024}
-}
-@article{huang2024probabilisticgaussiansuperpositionefficient,
-      title={GaussianFormer-2: Probabilistic Gaussian Superposition for Efficient 3D Occupancy Prediction}, 
-      author={Yuanhui Huang and Amonnut Thammatadatrakoon and Wenzhao Zheng and Yunpeng Zhang and Dalong Du and Jiwen Lu},
-      journal={arXiv preprint arXiv:2412.04384},
-      year={2024}
 }
 ```

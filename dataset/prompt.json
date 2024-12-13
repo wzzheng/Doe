@@ -1,7 +1,0 @@
-{
-    "generate_scene": "Draw image in front of a vehicle.", 
-    "desc": "Summarize what the image shows.",
-    "action": "What should be the next move?",
-    "plan": "Give the next 6 plans.", 
-    "image": "Draw the image of the next frame."
-}

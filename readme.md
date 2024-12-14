@@ -1,5 +1,5 @@
 # Doe-1: Closed-Loop Autonomous Driving with Large World Model
-### [Paper](https://arxiv.org/pdf/2412.08643)  | [Project Page](https://wzzheng.net/Doe)  | [Code](https://github.com/wzzheng/Doe) 
+### [Paper](https://arxiv.org/pdf/2412.09627)  | [Project Page](https://wzzheng.net/Doe)  | [Code](https://github.com/wzzheng/Doe) 
 ![logo](./assets/logo.jpg)
 
 Check out our [Large Driving Model](https://github.com/wzzheng/LDM/) Series! 
@@ -16,7 +16,7 @@ Doe-1 is the first closed-loop autonomous driving model for unified perception, 
 ## News
 
 - **[2024/12/13]** Model weights and evaluation code release.
-- **[2024/12/13]** Paper released on [arXiv](https://arxiv.org/abs/).
+- **[2024/12/13]** Paper released on [arXiv](https://arxiv.org/abs/2412.09627).
 - **[2024/12/13]** Demo release.
 
 ## Demo
@@ -108,7 +108,7 @@ If you find this project helpful, please consider citing the following paper:
 @article{doe,
     title={Doe-1: Closed-Loop Autonomous Driving with Large World Model},
     author={Zheng, Wenzhao and Xia, Zetian and Huang, Yuanhui and Zuo, Sicheng and Zhou, Jie and Lu, Jiwen},
-    journal={arXiv preprint arXiv:},
+    journal={arXiv preprint arXiv: 2412.09627},
     year={2024}
 }
 ```

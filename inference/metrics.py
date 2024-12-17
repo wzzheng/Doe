@@ -11,10 +11,18 @@ def calc_l2(plan, gt):
 def eval_qa(preds, refs, metric='rouge'):
     # To avoid download config from huggingface, download the metric config on github
     # and load it locally
-    # evaluator = evaluate.load('/home/xzt/Lumina-mGPT/lumina_mgpt/inference/rouge/rouge.py')
+    # evaluator = evaluate.load('rouge.py')
 
     # for Cider, simply use
     # evaluator = Cider()
+    
+    if metric == 'cider':
+        predictions, references = {}, {}
+        for i, p in enumerate(predictions):
+            predictions[i] = p
+            references[i] = refs[i]
+        evaluator = Cider()
+        return {'cider': evaluator.compute_score(references, predictions)[0]}
     
     evaluator = evaluate.load(metric)
     # TODO: lower batch size

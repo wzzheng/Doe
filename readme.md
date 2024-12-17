@@ -15,9 +15,9 @@ Doe-1 is the first closed-loop autonomous driving model for unified perception, 
 
 ## News
 
-- **[2024/12/13]** Model weights and evaluation code release.
+- **[2024/12/13]** Evaluation code released.
 - **[2024/12/13]** Paper released on [arXiv](https://arxiv.org/abs/2412.09627).
-- **[2024/12/13]** Demo release.
+- **[2024/12/13]** Demo released.
 
 ## Demo
 

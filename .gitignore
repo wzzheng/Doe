@@ -135,3 +135,5 @@ data/
 out/
 outputs/
 .DS_Store
+meteor/
+rouge/

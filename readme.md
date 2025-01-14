@@ -70,6 +70,8 @@ Doe/
 - ...
 ```
 
+4. Download the Doe-1 weight [HERE](https://cloud.tsinghua.edu.cn/d/86e47c05830e4caaa40e/)
+
 ### Inference
 
 <!-- We provide the following checkpoints: -->

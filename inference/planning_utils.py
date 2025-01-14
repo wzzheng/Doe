@@ -200,6 +200,7 @@ class PlanningMetric():
             [self.H / 2. + 0.5, -self.W / 2.],
             [-self.H / 2. + 0.5, -self.W / 2.],
         ])
+        
         pts = (pts - self.bx.cpu().numpy() ) / (self.dx.cpu().numpy())
         pts[:, [0, 1]] = pts[:, [1, 0]]
         rr, cc = polygon(pts[:,1], pts[:,0])

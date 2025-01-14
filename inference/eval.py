@@ -9,6 +9,7 @@ from PIL import Image
 import evaluate
 import torch
 import numpy as np
+from tqdm import tqdm
 from pycocoevalcap.cider.cider import Cider
 
 from model.lumina_mgpt.inference_solver import FlexARInferenceSolver
@@ -49,88 +50,87 @@ def main(args):
     mask_tokens, mask_ids = encode_mask(processor)
 
     with torch.no_grad():
-        for i, convs in enumerate(data[div*args.id: div*(args.id+1)]):
+        for i, convs in tqdm(enumerate(data[div*args.id: div*(args.id+1)])):
             past_tokens, past_key_values = None, None
+            try:
+                for j, conv in enumerate(convs):
+                    qas = list(map(qa_from_dict, conv)) # [QAs]
+                    # print(qas)
 
-            for j, conv in enumerate(convs):
-                qas = list(map(qa_from_dict, conv)) # [QAs]
-                # print(qas)
-
-                for qa in qas:
-                    # print(qa.q, qa.a)
-
-                    if not tasks_config[task][qa.task][j]:
-                        continue
-                    
-                    if do_generate[task][qa.task][j]:
-                        print('generating')
-                        generated, past_tokens, past_key_values = inferencer.generate(
-                            qas=[[qa.q, None]], 
-                            locs=qa.coords[0],
-                            past_key_values=past_key_values,
-                            past_tokens=past_tokens,
-                            logits_processor=inferencer.create_logits_processor(generation_configs[qa.task]['processor']),
-                            **generation_configs[qa.task]['settings'],
-                        )
-                        
-                        if qa.task == 'plan':
-                            plans = '' + generated[0]
-                            past_tokens = torch.cat((past_tokens, mask_ids), dim=1)
-                            # argmax for example
-                            ans_ids = inferencer.model(past_tokens).logits.argmax(-1).squeeze(0)
-                            ans_ids = ans_ids[-27:-2].tolist()
-                            plan_tokens = processor.tokenizer.tokenizer.decode(ans_ids)
-                            plans += plan_tokens
-                            plans = decode_plans(plans)
-                            # log id for metric
-                            logs.append({'plan': plans, 'gt': qa.plan, 'id': qa.id})
-                        
-                        elif qa.task == 'image' or qa.task == 'init':
-                            generated[1][0].save(os.path.join(save_path, f'{i}-{j}.jpg'))
-                        
-                        else:
-                            logs.append({'generate': generated[0], 'gt': qa.a, 'gt_locs': qa.coords[1], 'task': qa.task})
-                            
-                        # TODO: decode coords
-                        
-                            
-                    else:
+                    for qa in qas:
                         # print(qa.q, qa.a)
-                        if qa.task == 'plan':
-                            new_tokens = process_prompt(
-                                processor, [[qa.q, qa.a+mask_tokens]], 
-                                images=qa.image, 
-                                plans=[[qa.plan[0][0]]], 
-                                locs=qa.coords[0]+qa.coords[1], 
-                                bos=(qa.task=='init')
-                            )     
 
-                        else:
-                            new_tokens = process_prompt(
-                                processor, [[qa.q, qa.a]], 
-                                images=qa.image, 
-                                plans=qa.plan, 
-                                locs=qa.coords[0]+qa.coords[1], 
-                                bos=(qa.task=='init')
-                            )
-
-                        if not past_tokens is None:
-                            past_tokens = torch.cat((past_tokens, new_tokens), dim=1)
+                        if not tasks_config[task][qa.task][j]:
+                            continue
                         
+                        if do_generate[task][qa.task][j]:
+                            # print('generating')
+                            generated, past_tokens, past_key_values = inferencer.generate(
+                                qas=[[qa.q, None]], 
+                                locs=qa.coords[0],
+                                past_key_values=past_key_values,
+                                past_tokens=past_tokens,
+                                logits_processor=inferencer.create_logits_processor(generation_configs[qa.task]['processor']),
+                                **generation_configs[qa.task]['settings'],
+                            )
+                            
+                            if qa.task == 'plan':
+                                plans = '' + generated[0]
+                                past_tokens = torch.cat((past_tokens, mask_ids), dim=1)
+                                # argmax for example
+                                ans_ids = inferencer.model(past_tokens).logits.argmax(-1).squeeze(0)
+                                ans_ids = ans_ids[-27:-2].tolist()
+                                plan_tokens = processor.tokenizer.tokenizer.decode(ans_ids)
+                                plans += plan_tokens
+                                plans = decode_plans(plans)
+                                # log id for metric
+                                logs.append({'plan': plans, 'gt': qa.plan, 'id': qa.id})
+                            
+                            elif qa.task == 'image' or qa.task == 'init':
+                                generated[1][0].save(os.path.join(save_path, f'{i}-{j}.jpg'))
+                            
+                            else:
+                                logs.append({'generate': generated[0], 'gt': qa.a, 'gt_locs': qa.coords[1], 'task': qa.task})
+                                
+                            # TODO: decode coords
+                            
+                                
                         else:
-                            past_tokens = new_tokens
+                            # print(qa.q, qa.a)
+                            if qa.task == 'plan':
+                                new_tokens = process_prompt(
+                                    processor, [[qa.q, qa.a+mask_tokens]], 
+                                    images=qa.image, 
+                                    plans=[[qa.plan[0][0]]], 
+                                    locs=qa.coords[0]+qa.coords[1], 
+                                    bos=(qa.task=='init')
+                                )     
+
+                            else:
+                                new_tokens = process_prompt(
+                                    processor, [[qa.q, qa.a]], 
+                                    images=qa.image, 
+                                    plans=qa.plan, 
+                                    locs=qa.coords[0]+qa.coords[1], 
+                                    bos=(qa.task=='init')
+                                )
+
+                            if not past_tokens is None:
+                                past_tokens = torch.cat((past_tokens, new_tokens), dim=1)
+                            
+                            else:
+                                past_tokens = new_tokens
+            except:
+                continue
             
             if i % 20 == 0:            
-                with open(os.path.join(save_path, 'log.json'), 'w') as f:
-                    json.dump(logs, f)
-            
-            with open(os.path.join(save_path, 'log.json'), 'w') as f:
+                with open(os.path.join(save_path, f'log-{args.id}.json'), 'w') as f:
                     json.dump(logs, f)
                             
     # load the log here and resume.
-    # with open('log.json', 'r') as f:
+    # with open(f'out/qa/log-{args.id}.json', 'r') as f:
     #   logs = json.load(f)
-    
+
     # metrics for plan and qa
     metric_dict = dict()
     if task == 'plan':
@@ -139,13 +139,14 @@ def main(args):
             annos = pickle.load(f)
         future_seconds = 3
         l2, cnt = np.zeros(2*future_seconds), 0
+        # coll
+        colls = [0., 0., 0.]
         
         for log in logs:
             if 'plan' in log:
                 l2 += np.array(calc_l2(log['plan'], log['gt'][0]))
 
-                # coll
-                colls = [0., 0., 0.]
+                
                 plan = torch.tensor(log['plan']).unsqueeze(0)
                 gt_infos = annos['infos'][log['id']]
                 gt_agent_boxes = np.concatenate([gt_infos['gt_boxes'], gt_infos['gt_velocity']], -1)
@@ -178,9 +179,9 @@ def main(args):
                 predictions.append(log['generate'])
                 references.append(log['gt'])
                 # add metrics
-                qa_dict = eval_qa(predictions, references)
-                for k, v in qa_dict.items():
-                    metric_dict[k] = v
+        qa_dict = eval_qa(predictions, references, 'meteor')
+        for k, v in qa_dict.items():
+            metric_dict[k] = v
 
     else:
         raise NotImplementedError()
@@ -188,7 +189,7 @@ def main(args):
     print(metric_dict)
     # TODO: support more evaluate metrics
 
-    with open(os.path.join(save_path, 'result.json'), 'w') as f:
+    with open(os.path.join(save_path, f'result-{args.id}.json'), 'w') as f:
         json.dump(metric_dict, f, indent=4)
 
 if __name__ == "__main__":

@@ -60,59 +60,56 @@ def main(args):
     view, task = 'CAM_FRONT', 'val'
 
     max_length = args.max_length # 5 for planning
+    for i, sample in tqdm(enumerate(data[:-10])):
+        conv = list()
+        if sample['frame_idx']+10 != data[i+10]['frame_idx']:
+            continue
+        while len(conv) < max_length:                
+            info = list()
+            token = sample['token']
+            # generate image
+            info.append(QA(prompt['generate_scene'] if len(conv) == 0 else prompt['image'], 
+                        '<|image|>', task='init' if len(conv) == 0 else 'image',
+                        image=[os.path.join(nusc_path, sample['cams'][view]["data_path"][16:])]))
+            
+            # generate desc
+            desc_path = os.path.join(qa_path, 'desc', task, f'{token}.json')
+            with open(desc_path, 'r') as f:
+                desc_action = json.load(f)
+            desc = process_desc(desc_action['description'])
+            action = desc_action['action']
+            info.append(QA(prompt['desc'], desc, task='desc'))
 
-    for i, sample in tqdm(enumerate(data[:2])):
-        info = list()
-        token = sample['token']
+            # generate counterfactual
+            vqa_path = os.path.join(qa_path, 'vqa', task, f'{token}.json')
+            if os.path.exists(vqa_path):
+                with open(vqa_path, 'r') as f:
+                    vqas = json.load(f)
+                for vqa in vqas:
+                    qa = QA(vqa['question'], vqa['answer'], task='cf')
+                    if qa.extract_coords():
+                        info.append(qa)
 
-        if len(conv) == max_length:
-            record_list.append(conv)
-            conv = list()
+            # generate qas
+            conv_path = os.path.join(qa_path, 'conv', task, f'{token}.json')
+            with open(conv_path, 'r') as f:
+                convs = json.load(f)
+            for qa in convs:
+                info.append(QA(qa['question'], qa['answer'], task='qa'))
 
-        if len(conv) == 0:
-            if sample['frame_idx']+10 != data[i+10]['frame_idx']:
-                continue
+            # generate action
+            info.append(QA(prompt['action'], action, task='action'))
+            # generate plan
+            plans = sample['gt_planning'][0].tolist()
+            info.append(QA(prompt['plan'], '<|plan|>', task='plan', plan=[plans], id=i+len(conv)))
 
-        # generate image
-        info.append(QA(prompt['generate_scene'] if len(conv) == 0 else prompt['image'], 
-                       '<|image|>', task='init' if len(conv) == 0 else 'image',
-                       image=[os.path.join(nusc_path, sample['cams'][view]["data_path"][16:])]))
-        
-        # generate desc
-        desc_path = os.path.join(qa_path, 'desc', task, f'{token}.json')
-        with open(desc_path, 'r') as f:
-            desc_action = json.load(f)
-        desc = process_desc(desc_action['description'])
-        action = desc_action['action']
-        info.append(QA(prompt['desc'], desc, task='desc'))
-
-        # generate counterfactual
-        vqa_path = os.path.join(qa_path, 'vqa', task, f'{token}.json')
-        if os.path.exists(vqa_path):
-            with open(vqa_path, 'r') as f:
-                vqas = json.load(f)
-            for vqa in vqas:
-                qa = QA(vqa['question'], vqa['answer'], task='cf')
-                if qa.extract_coords():
-                    info.append(qa)
-
-        # generate qas
-        conv_path = os.path.join(qa_path, 'conv', task, f'{token}.json')
-        with open(conv_path, 'r') as f:
-            convs = json.load(f)
-        for qa in convs:
-            info.append(QA(qa['question'], qa['answer'], task='qa'))
-
-        # generate action
-        info.append(QA(prompt['action'], action, task='action'))
-
-        # generate plan
-        plans = sample['gt_planning'][0].tolist()
-        info.append(QA(prompt['plan'], '<|plan|>', task='plan', plan=[plans], id=i))
-        
-        info = list(map(vars, info))
-        conv.append(info)
-        # print(info)
+            info = list(map(vars, info))
+            conv.append(info)
+            # print(info)
+            
+            sample = data[i+len(conv)]
+            
+        record_list.append(conv)
     
     with open(save_path, 'w', encoding='utf-8') as f:
         json.dump(record_list, f, ensure_ascii=False, indent=4)

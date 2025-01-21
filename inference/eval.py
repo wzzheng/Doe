@@ -127,7 +127,7 @@ def main(args):
                 with open(os.path.join(save_path, f'log-{args.id}.json'), 'w') as f:
                     json.dump(logs, f)
                             
-    # load the log here and resume.
+    # # load the log here and resume.
     # with open(f'out/qa/log-{args.id}.json', 'r') as f:
     #   logs = json.load(f)
 
@@ -143,6 +143,7 @@ def main(args):
         colls = [0., 0., 0.]
         
         for log in logs:
+            
             if 'plan' in log:
                 l2 += np.array(calc_l2(log['plan'], log['gt'][0]))
 
@@ -163,7 +164,7 @@ def main(args):
                     colls[jj] += coll
 
                 cnt += 1
-
+                
         for i in range(future_seconds):
             cur_time = (i+1)*2
             metric_dict[f'l2_{i+1}s'] = l2[:cur_time].sum().item() / cur_time / cnt

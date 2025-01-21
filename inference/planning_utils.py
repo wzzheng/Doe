@@ -194,11 +194,12 @@ class PlanningMetric():
         return coll_index, right_light, out_of_drivable
 
     def evaluate_single_coll(self, traj, segmentation, input_gt=None, gt_traj=None, index=None):
+        
         pts = np.array([
-            [-self.H / 2. + 0.5, self.W / 2.],
-            [self.H / 2. + 0.5, self.W / 2.],
-            [self.H / 2. + 0.5, -self.W / 2.],
-            [-self.H / 2. + 0.5, -self.W / 2.],
+            [-self.H / 2. + 0.5 + 0.985793, self.W / 2.],
+            [self.H / 2. + 0.5 + 0.985793, self.W / 2.],
+            [self.H / 2. + 0.5 + 0.985793, -self.W / 2.],
+            [-self.H / 2. + 0.5 + 0.985793, -self.W / 2.],
         ])
         
         pts = (pts - self.bx.cpu().numpy() ) / (self.dx.cpu().numpy())
